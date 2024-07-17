@@ -2,8 +2,8 @@ lxml
 lxml_html_clean
 oauth2client
 pgpy
-PyQt5
-PyQtWebEngine
+PyQt6
+PyQt6-WebEngine
 requests
 sqlobject
 twisted
