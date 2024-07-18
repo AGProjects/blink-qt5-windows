@@ -60,7 +60,8 @@ if hasattr(sys, 'frozen'):
     sys.stdout.file = ApplicationData.get('logs/output.log')
 
 if platform.system() == 'Darwin':
-    QApplication.setStyle('fusion')
+    QApplication.setStyle('Fusion')
+    os.environ["QMLSCENE_DEVICE"] = "softwarecontext"
 
 
 class IPAddressMonitor(object):
