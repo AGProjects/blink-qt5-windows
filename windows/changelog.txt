@@ -1,0 +1,45 @@
+blink (5.6.0) unstable; urgency=medium
+
+  * Added support for filetransfer messages
+  * Added support for encrypting/decrypting MSRP file transfers
+  * Added support for file encryption/decryption
+  * Added support for displaying conference files
+  * Added support for pull filetransfers
+  * Added SIP Message functionality
+  * Added offline messaging based on SylkServer API
+  * Added OpenPGP encryption for SIP Messages
+  * Added OTR encryption to SIP Message sessions
+  * Added history for chat and messages
+  * Added NAT traversal preferences panel
+  * Added replace function for chat messages
+  * Added menu item in chat to send files
+  * Added auto answer feature per account
+  * Added VP9 codec
+  * Implemented TLS certificate verification
+  * Handle scaling for different screen resolutions
+  * Added multi-language support
+  * Added Dutch translation
+  * Added documentation folder doc/
+  * Add option to add/remove realtime chat during audio/video calls
+  * Added multiple device synchronization for SIP messages
+  * Added advanced messaging options in account preferences
+  * Several fixes for IMDN and history storage
+  * Added status support for (chat) messages
+  * Use SIP message method as default for 'chat'
+  * Added IMDN support for messages
+  * Added menuitem to show last conversations
+  * Added setting to add unknown message contacts to contact list
+  * Fixed Google contacts
+  * Reorganized Advanced preferences
+  * Added option to show name and uri in call history menu
+  * Fix for account creation
+  * Screen sharing fixes
+  * Added presence and message_summary account settings
+  * Fixed handling drag and drop inline images in chat window
+  * Fixed loading icons from XCAP server
+  * Increase the size of some widgets
+  * Automatically set sip2sip.info server settings URL
+  * Refactored application menus
+  * Allow calling to all URIs belonging to a contact
+  * Show sip account registrar address in preferences panel
+  * Migrated code to Python 3
