@@ -1,0 +1,13 @@
+Migrate to Qt6
+--------------
+
+Blink Qt5 now works on Windows up till Jul 19th, 2023.
+   
+Blink Qt6 does not work on Windows because some Qt6 libraries are not available:
+
+   a. QT6 Web Engine component is not yet available for msys2-mingw64 enviroment
+
+   b. Python extensions for QT6 web engine do not compile on mingw64 GCC compiler
+      yet, pyqt6webengine is still work in progress:
+
+      https://github.com/msys2/MINGW-packages/issues/8444
