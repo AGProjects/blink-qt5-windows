@@ -1,9 +1,8 @@
+Packaging Blink Qt for Windows
+==============================
 
-Building Blink Qt in Windows
-============================
-
-This document contains information on how to build a Windows EXE with Blink Qt and how to package it for
-distribution using Inno Setup.
+This document contains information on how to build a Windows EXE with Blink
+Qt and how to package it for distribution using Inno Setup.
 
 ## 1. Install SIP SIMPLE Client SDK and build Blink
 
