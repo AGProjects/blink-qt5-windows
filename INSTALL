@@ -14,7 +14,7 @@ Step 1. Install dependencies
 ----------------------------
 
 * Install python3-sipsimple, follow the instructions on:
-  https://github.com/AGProjects/python3-sipsimple/master/docs/Install.windows
+  https://github.com/AGProjects/python3-sipsimple/blob/master/docs/Install.windows
 
 * Install PyQt5:
   pacman -S mingw-w64-x86_64-pyqt5
