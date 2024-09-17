@@ -1,76 +1,14 @@
 
-Debian / Ubuntu or other Linux systems
-======================================
+Blink Qt installation on Microsoft Windows
+==========================================
 
-See debian/control file for the precise version numbers.
+These instructions has been tested on Windows X with the MSYS2 environment
+and the MinGW-w64 compiler toolchain.
 
-Manual Installation
--------------------
+Clone the repository:
 
-Install the runtime dependencies:
+git clone https://github.com/AGProjects/blink-qt5-windows.git
 
- * libavahi-compat-libdnssd1
- * python3-application
- * python-enum34
- * python3-eventlib
- * python3-googleapi
- * python3-lxml
- * python3-oauth2client
- * python3-pgpy
- * python3-pyqt5
- * python3-pyqt5.qtsvg
- * python3-pyqt5.qtwebkit
- * python3-requests
- * python3-sipsimple
- * python3-twisted
- * python3-sqlobject
- * python3-zope.interface
- * x11vnc
-
-
-Download and install python3-sipsimple and its dependencies:
-
-https://github.com/AGProjects/python3-sipsimple/blob/master/docs/Install.linux
-
-
-After installing the above dependencies, install Blink system wide using:
-
-python3 setup.py build_ext
-sudo python3 setup.py install
-
-
-Creating Debian Packages
-------------------------
-
-Install the building dependencies:
-
-  * debhelper
-  * python3-all-dev
-  * python3-all-dbg
-  * python3-qt5
-  * python3-support
-  * build-essential
-  * devscripts
-  * libvncserver-dev
-
-Create a clean distribution file:
-
-python3 setup.py sdist
-
-Go to the ./dist directory and untar the file created at the step above.
-
-Go to the newly created directory and type:
-
-debuild
-
-The .deb and related files are built in the upper directory.
-
-
-Installation on Microsoft Windows
-=================================
-
-To run Blink on Windows you need to use the repository named blink-qt5-windows.
-It is tested with the MSYS2 environment and the MinGW-w64 compiler toolchain.
 
 Step 1. Install dependencies
 ----------------------------
@@ -94,12 +32,9 @@ Step 1. Install dependencies
 * Install lxml pgpy and sqlobject
   pip install lxml[html_clean] pgpy sqlobject
 
+
 Step 2. Build and run Blink
 ---------------------------
-
-Clone the repository if you don't have it:
-
-git clone https://github.com/AGProjects/blink-qt5-windows.git
 
 ./build_inplace
 
