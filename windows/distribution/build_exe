@@ -1,0 +1,6 @@
+#!/bin/bash
+pyinstaller.exe ./blink.spec -y --clean
+#cd dist/blink
+#mkdir dll
+#find ./lib -not \( -path "./lib/PyQt5*" -type d -prune \) -not \( -path './lib/ossl-modules*' -type d -prune \) -name \*.dll -not -name 'libpython3.11.dll' -not -name 'zlib1.dll' -exec mv {} dll/ \;
+#mv ./lib/resources ./
