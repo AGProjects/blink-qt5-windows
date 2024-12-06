@@ -1046,7 +1046,12 @@ class MessageManager(object, metaclass=Singleton):
             message_id = next((header.value for header in cpim_message.additional_headers if header.name == 'Message-ID'), str(uuid.uuid4()))
         else:
             payload = SimplePayload.decode(data.body, data.content_type)
-            body = payload.content.decode()
+            try:
+                body = payload.content.decode()
+            except UnicodeDecodeError as e:
+                print(payload.content)
+                raise e
+
             content_type = payload.content_type
             sender = from_header
             disposition = None

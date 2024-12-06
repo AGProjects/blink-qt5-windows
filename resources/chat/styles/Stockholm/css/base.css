@@ -196,7 +196,7 @@ body
 .message:not(.focus) .x-message.ltr .x-time,
 .message .x-message.ltr:not(.focus) .x-time
 {
-	/*right: 1px;*/
+	right: 10px;
 	padding-right: 5px;
 	float: right;
 	margin-right: -8px;

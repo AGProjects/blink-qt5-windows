@@ -328,7 +328,7 @@ class PreferencesWindow(base_class, ui_class, metaclass=QSingleton):
 
         # Chat
         self.style_view.sizeChanged.connect(self._SH_StyleViewSizeChanged)
-        self.style_view.page().contentsSizeChanged.connect(self._SH_StyleViewFrameContentsSizeChanged)
+        self.style_view.page().mainFrame().contentsSizeChanged.connect(self._SH_StyleViewFrameContentsSizeChanged)
 
         self.style_button.activated[int].connect(self._SH_StyleButtonActivated)
         self.style_variant_button.activated[int].connect(self._SH_StyleVariantButtonActivated)
@@ -1003,6 +1003,7 @@ class PreferencesWindow(base_class, ui_class, metaclass=QSingleton):
         user_icons = 'show-icons' if blink_settings.chat_window.show_user_icons else 'hide-icons'
 
         self.style_view.setHtml(self.style_view.template.format(base_url=FileURL(style.path) + '/', style_url=style_variant + '.css', font_family=font_family, font_size=font_size), baseUrl=QUrl.fromLocalFile(os.path.abspath(sys.argv[0])))
+        self.chat_element = self.style_view.page().mainFrame().findFirstElement('#chat')
         self.chat_js = ChatJSInterface(self.style_view.page())
         self.style_view.last_message = None
 
@@ -1107,7 +1108,8 @@ class PreferencesWindow(base_class, ui_class, metaclass=QSingleton):
             self.chat_js.scroll_to_bottom()
 
     def _align_style_preview(self, scroll=False):
-        self.chat_js.get_height_element('#chat', partial(self._process_height, scroll=scroll))
+        content_height = self.chat_element.geometry().height()
+        self._process_height(content_height, scroll=scroll)
 
     # Signal handlers
     #

@@ -12,8 +12,9 @@ import urllib.request, urllib.parse, urllib.error
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QSortFilterProxyModel, QUrl, QUrlQuery
 from PyQt5.QtGui import QIcon
-from PyQt5.QtNetwork import QAuthenticator
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
+from PyQt5.QtNetwork import QNetworkAccessManager
+from PyQt5.QtWebKit import QWebSettings as QWebEngineSettings
+from PyQt5.QtWebKitWidgets import QWebView as QWebEngineView, QWebPage as QWebEnginePage
 from PyQt5.QtWidgets import QApplication, QButtonGroup, QComboBox, QMenu
 
 from application.notification import IObserver, NotificationCenter
@@ -622,10 +623,8 @@ del ui_class, base_class
 class WebPage(QWebEnginePage):
     def __init__(self, parent=None):
         super(WebPage, self).__init__(parent)
-        disable_actions = {QWebEnginePage.WebAction.OpenLinkInNewBackgroundTab, QWebEnginePage.WebAction.OpenLinkInNewWindow, QWebEnginePage.WebAction.OpenLinkInThisWindow,
-                           QWebEnginePage.WebAction.OpenLinkInNewTab,
-                           QWebEnginePage.WebAction.DownloadLinkToDisk, QWebEnginePage.WebAction.DownloadImageToDisk,
-                           QWebEnginePage.WebAction.DownloadMediaToDisk}
+        disable_actions = {QWebEnginePage.OpenLink, QWebEnginePage.OpenLinkInNewWindow, QWebEnginePage.OpenLinkInThisWindow, QWebEnginePage.OpenFrameInNewWindow, QWebEnginePage.DownloadLinkToDisk,
+                           QWebEnginePage.OpenImageInNewWindow, QWebEnginePage.DownloadImageToDisk, QWebEnginePage.DownloadMediaToDisk}
         for action in (self.action(action) for action in disable_actions):
             action.setVisible(False)
         self.call_link_clicked = False
@@ -633,10 +632,10 @@ class WebPage(QWebEnginePage):
     def createWindow(self, type):
         return self
 
-    def acceptNavigationRequest(self, url, navigation_type, frame):
-        if navigation_type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked and url.scheme() in ('sip', 'sips'):
+    def acceptNavigationRequest(self, frame, request, navigation_type):
+        if navigation_type == QWebEnginePage.NavigationTypeLinkClicked and self.linkDelegationPolicy() == QWebEnginePage.DontDelegateLinks and request.url().scheme() in ('sip', 'sips'):
             blink = QApplication.instance()
-            contact, contact_uri = URIUtils.find_contact(url.toString())
+            contact, contact_uri = URIUtils.find_contact(request.url().toString())
             session_manager = SessionManager()
             session_manager.create_session(contact, contact_uri, [StreamDescription('audio')])
             blink.main_window.raise_()
@@ -644,7 +643,7 @@ class WebPage(QWebEnginePage):
             self.call_link_clicked = True
             return False
         self.call_link_clicked = False
-        return super(WebPage, self).acceptNavigationRequest(url, navigation_type, frame)
+        return super(WebPage, self).acceptNavigationRequest(frame, request, navigation_type)
 
 
 class ServerToolsAccountModel(QSortFilterProxyModel):
@@ -656,7 +655,7 @@ class ServerToolsAccountModel(QSortFilterProxyModel):
     def filterAcceptsRow(self, source_row, source_parent):
         source_model = self.sourceModel()
         source_index = source_model.index(source_row, 0, source_parent)
-        account_info = source_model.data(source_index, Qt.ItemDataRole.UserRole)
+        account_info = source_model.data(source_index, Qt.UserRole)
         return bool(account_info.account is not BonjourAccount() and account_info.account.enabled and account_info.account.server.settings_url)
 
 
@@ -676,6 +675,8 @@ class ServerToolsWebView(QWebEngineView):
         self.realm = None
         self.homepage = None
         self.urlChanged.connect(self._SH_URLChanged)
+        self.settings().setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+        self.settings().setAttribute(QWebEngineSettings.JavascriptCanOpenWindows, True)
 
     @property
     def query_items(self):
@@ -691,7 +692,6 @@ class ServerToolsWebView(QWebEngineView):
         if account is old_account:
             return
         self.__dict__['account'] = account
-        self.page().profile().clearHttpCache()
         self.authenticated = False
         if old_account:
             notification_center.remove_observer(self, sender=old_account)
@@ -700,11 +700,12 @@ class ServerToolsWebView(QWebEngineView):
             self.realm = account.id.domain
         else:
             self.realm = None
-        try:
-            self.page().authenticationRequired.disconnect(self._SH_AuthenticationRequired)
-        except TypeError:
-            pass
-        self.page().authenticationRequired.connect(self._SH_AuthenticationRequired)
+        self.access_manager.authenticationRequired.disconnect(self._SH_AuthenticationRequired)
+        self.access_manager.finished.disconnect(self._SH_Finished)
+        self.access_manager = QNetworkAccessManager(self)
+        self.access_manager.authenticationRequired.connect(self._SH_AuthenticationRequired)
+        self.access_manager.finished.connect(self._SH_Finished)
+        self.page().setNetworkAccessManager(self.access_manager)
 
     account = property(_get_account, _set_account)
     del _get_account, _set_account
@@ -728,9 +729,13 @@ class ServerToolsWebView(QWebEngineView):
             # we were already authenticated, yet it asks for the auth again. this means our credentials are not good.
             # we do not provide credentials anymore in order to fail and not try indefinitely, but we also reset the
             # authenticated status so that we try again when the page is reloaded.
-            self.last_error = 'Authentication failed'
-            sip.assign(auth, QAuthenticator())
             self.authenticated = False
+
+    def _SH_Finished(self, reply):
+        if reply.error() != reply.NoError:
+            self.last_error = reply.errorString()
+        else:
+            self.last_error = None
 
     def _SH_URLChanged(self, url):
         query_items = dict(QUrlQuery(url).queryItems())
@@ -750,7 +755,7 @@ class ServerToolsWebView(QWebEngineView):
             self.homepage = url
         if reset_history:
             self.history().clear()
-            self.page().runJavaScript('window.location.replace("{}");'.format(url.toString()))  # this will replace the current url in the history
+            self.page().mainFrame().evaluateJavaScript('window.location.replace("{}");'.format(url.toString()))  # this will replace the current url in the history
         else:
             self.load(url)
 

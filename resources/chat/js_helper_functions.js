@@ -206,10 +206,8 @@ function handleContextMenu(e) {
 }
 
 window.onload = function() {
-    new QWebChannel(qt.webChannelTransport, function(channel) {
-        chat = channel.objects.chat;
+    setTimeout(function() {
         window.chat = chat;
         chat._JH_LoadFinished(true);
-    });
-
+    }, 1000);
 }
