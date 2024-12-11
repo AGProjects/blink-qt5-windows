@@ -1,4 +1,37 @@
-blink (5.6.0) unstable; urgency=medium
+blink (5.9.1)
+
+  * Fixed session selection in chat window
+  * Fixed buttons in conference join dialog
+  * Fixed start chat button in main window
+  * Fixed updating menu in chat window
+  * Migrate code for QT6 compatibilty
+  * Refactored web views to use latest QWebEngine
+  * Chat window only opens on user interactions
+  * Improved MacOS compatibilty
+  * Implemented persistent Bonjour messaging
+  * Added account selection for outgoing messages
+  * Added audio/video call entries to messages
+  * Added dialog to remove messages
+  * Added option to start a random conference
+  * Added menu item to show session info panel on audio calls
+  * Added right-click contextual menu to calls
+  * Added unread counter to contact and menu to show unread messages
+  * Added virtual messages group to show all contacts that have messages
+  * Added info button to audio sessions
+  * Reorganized contact menu structure
+  * Fix retrying sending locally failed messages
+  * Fixed wrongly stored Sylk API messages
+  * Fixed only deleting filetranfer files from cache
+  * Send images by file transfers in messages/MSRP chat
+  * Improved message rendering themes
+  * Bugfixes for drag/drop
+  * Bugfixes for filetransfers
+  * Bugfixes for messages
+  * Bugfixes for messages with Bonjour account
+  * Bugfixes for PGP message handling
+  * Bugfixes for sending IMDN messages
+
+blink (5.6.0)
 
   * Added support for filetransfer messages
   * Added support for encrypting/decrypting MSRP file transfers
