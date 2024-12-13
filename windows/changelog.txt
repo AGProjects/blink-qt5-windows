@@ -4,8 +4,8 @@ blink (5.9.1)
   * Fixed buttons in conference join dialog
   * Fixed start chat button in main window
   * Fixed updating menu in chat window
+  * Fixed deleting files
   * Migrate code for QT6 compatibilty
-  * Refactored web views to use latest QWebEngine
   * Chat window only opens on user interactions
   * Improved MacOS compatibilty
   * Implemented persistent Bonjour messaging
@@ -18,11 +18,15 @@ blink (5.9.1)
   * Added unread counter to contact and menu to show unread messages
   * Added virtual messages group to show all contacts that have messages
   * Added info button to audio sessions
+  * Added auto record function
+  * Added logs window
   * Reorganized contact menu structure
+  * Refresh audio devices in audio menu
   * Fix retrying sending locally failed messages
   * Fixed wrongly stored Sylk API messages
   * Fixed only deleting filetranfer files from cache
   * Send images by file transfers in messages/MSRP chat
+  * Show images if they can't be rendered
   * Improved message rendering themes
   * Bugfixes for drag/drop
   * Bugfixes for filetransfers
