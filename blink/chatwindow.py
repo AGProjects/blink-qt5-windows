@@ -2606,6 +2606,7 @@ class ChatWindow(base_class, ui_class, ColorHelperMixin):
         super(ChatWindow, self).show()
         self.raise_()
         self.activateWindow()
+        self.showNormal()
         if not self.session_model.rowCount():
             history = HistoryManager()
             history.get_last_contacts()
@@ -2618,6 +2619,7 @@ class ChatWindow(base_class, ui_class, ColorHelperMixin):
         super(ChatWindow, self).show()
         self.raise_()
         self.activateWindow()
+        self.showNormal()
         history = HistoryManager()
         history.get_last_contacts()
 
@@ -2625,6 +2627,7 @@ class ChatWindow(base_class, ui_class, ColorHelperMixin):
         super(ChatWindow, self).show()
         self.raise_()
         self.activateWindow()
+        self.showNormal()
         history = HistoryManager()
         history.get_last_contacts(unread=True)
 
