@@ -48,7 +48,7 @@ from blink.util import run_in_gui_thread, translate
 
 __all__ = ['MessageManager', 'BlinkMessage']
 
-dns_error_map = {dns.resolver.NXDOMAIN: 'DNS record does not exist',
+dns_error_map = {dns.resolver.NXDOMAIN: 'Domain not found in DNS',
                dns.resolver.NoAnswer: 'DNS response contains no answer',
                dns.resolver.NoNameservers: 'no DNS name servers could be reached',
                dns.resolver.Timeout: 'no DNS response received, the query has timed out'}
@@ -390,13 +390,20 @@ class OutgoingMessage(object):
 
             if self.session is not None:
                 stream = self.session.fake_streams.get('messages')
+                if not stream:
+                    data = NotificationData(originator='remote', reason=f"No chat stream established", id=self.id, code=None)
+                    notification_center.post_notification('BlinkMessageDidFail', sender=self.session, data=data)
+                    log.error('Sending message %s failed: no chat stream established' % self.id)
+                    return
+
                 if self.content_type.lower() not in self.__disabled_imdn_content_types__:
                     if self.account.sms.enable_pgp and stream.can_encrypt:
                         try:
                             content = stream.encrypt(self.content, self.content_type)
                         except Exception as e:
                             data=NotificationData(originator='remote',reason=f"Encryption error {e}", id=self.id)
-                            notification_center.post_notification('BlinkMessageDidFail', sender=self.session, data=data)
+                            notification_center.post_notification('BlinkMessageDidFail', sender=self.session, data=data, code=None)
+                            log.error('Sending message %s failed: %s' % (self.id, str(e)))
                             return
                         self.is_secure = True
             content = content if isinstance(content, bytes) else content.encode()
@@ -434,7 +441,7 @@ class OutgoingMessage(object):
             except PJSIPError as e:
                 log.info(f'Sending {content_type} message {self.id} failed: {str(e)}')
                 notification_center = NotificationCenter()
-                data = NotificationData(originator='local', reason=str(e), id=self.id)
+                data = NotificationData(originator='local', reason=str(e), id=self.id, code=None)
                 notification_center.post_notification('BlinkMessageDidFail', sender=self.session, data=data)
         else:
             pass
@@ -505,7 +512,7 @@ class OutgoingMessage(object):
 
         log.info(f'DNS lookup for message {self.id} failed {originator}ly: {reason}')
 
-        data = NotificationData(reason=reason, originator=originator, id=self.id)
+        data = NotificationData(reason=reason, originator=originator, id=self.id, code=None)
         notification_center = NotificationCenter()
         notification_center.post_notification('BlinkMessageDidFail', sender=self.session, data=data)
 
@@ -534,7 +541,7 @@ class OutgoingMessage(object):
             originator = 'remote'
 
         reason = notification.data.reason.decode() if isinstance(notification.data.reason, bytes) else notification.data.reason
-        data = NotificationData(reason=reason, originator=originator, id=self.id)
+        data = NotificationData(reason=reason, originator=originator, id=self.id, code=notification.data.code)
         notification_center = NotificationCenter()
         notification_center.post_notification('BlinkMessageDidFail', sender=self.session, data=data)
 
