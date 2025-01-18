@@ -3373,6 +3373,8 @@ class ChatWindow(base_class, ui_class, ColorHelperMixin):
             return
 
         last_account = None
+        last_timestamp = None
+        newest_timestamp = None
         for message in messages:
             encrypted = False
             state = message.state
@@ -3435,7 +3437,10 @@ class ChatWindow(base_class, ui_class, ColorHelperMixin):
                 uri = message.remote_uri
 
             timestamp = message.timestamp.replace(tzinfo=timezone.utc).astimezone(tzlocal())
-            # print(f"t: {timestamp}")
+            if last_timestamp and timestamp > last_timestamp:
+                newest_timestamp = timestamp
+            last_timestamp = timestamp
+
             if account_manager.has_account(uri):
                 found_account = account_manager.get_account(uri)
                 sender = ChatSender(message.display_name or found_account.display_name, uri, session.chat_widget.user_icon.filename)
@@ -3488,6 +3493,8 @@ class ChatWindow(base_class, ui_class, ColorHelperMixin):
             NotificationCenter().post_notification('BlinkSessionMessageAccountChanged', sender=blink_session)
             NotificationCenter().post_notification('PGPKeysShouldReload', sender=blink_session)
 
+        blink_session.updateTimestamp(newest_timestamp)
+
         NotificationCenter().post_notification('BlinkSessionWasLoaded', sender=blink_session)
         while self.fetch_after_load:
             (blink_session, file, message, info) = self.fetch_after_load.popleft()
@@ -3508,7 +3515,7 @@ class ChatWindow(base_class, ui_class, ColorHelperMixin):
     def _NH_BlinkMessageHistoryLastContactsDidSucceed(self, notification):
         contacts = notification.data.contacts
         message_manager = MessageManager()
-        for display_name, contact in contacts[::-1]:
+        for display_name, contact, timestamp in contacts[::-1]:
             # allow the user to select the 1st session
             message_manager.create_message_session(contact, display_name, selected=False)
 

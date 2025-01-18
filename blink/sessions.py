@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from itertools import chain
 from operator import attrgetter
+from dateutil.tz import tzlocal
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QAbstractListModel, QEasingCurve, QModelIndex, QObject, QProcess, QPropertyAnimation, pyqtSignal
@@ -48,6 +49,7 @@ from sipsimple.streams.msrp.chat import OTRState, SMPStatus
 from sipsimple.streams.msrp.filetransfer import FileSelector
 from sipsimple.streams.msrp.screensharing import ExternalVNCServerHandler, ExternalVNCViewerHandler, ScreenSharingStream
 from sipsimple.threading import run_in_thread, run_in_twisted_thread
+from sipsimple.util import ISOTimestamp
 
 from blink.logging import MessagingTrace as message_log
 from blink.configuration.datatypes import File
@@ -680,6 +682,11 @@ class BlinkSession(BlinkSessionBase):
     @property
     def remote_focus(self):
         return self.sip_session is not None and self.sip_session.remote_focus
+
+    def updateTimestamp(self, timestamp=None):
+        if self.items.chat:
+            self.items.chat.timestamp = timestamp if timestamp else ISOTimestamp.now().replace(tzinfo=tzlocal())
+            # TODO should we reorder the tiles?
 
     def init_incoming(self, sip_session, streams, contact, contact_uri, reinitialize=False, remote_instance_id=None):
         assert self.state in (None, 'initialized', 'ended')
@@ -3343,7 +3350,8 @@ class ChatSessionItem(object):
 
     size_hint = QSize(200, 36)
 
-    def __init__(self, blink_session):
+    def __init__(self, blink_session, timestamp=None):
+        self.timestamp = timestamp or ISOTimestamp.now().replace(tzinfo=tzlocal())
         self.blink_session = blink_session
         self.blink_session.items.chat = self
         self.remote_composing = False
@@ -3713,9 +3721,9 @@ class ChatSessionModel(QAbstractListModel):
         self.dataChanged.emit(index, index)
 
     def _find_insertion_point(self, session):
-        return len(self.sessions)
+        print('_find_insertion_point for session %s: %s' % (session.name, session.timestamp))
         for position, item in enumerate(self.sessions):
-            if item.name > session.name:
+            if session.timestamp > item.timestamp:
                 break
         else:
             position = len(self.sessions)
