@@ -1444,9 +1444,14 @@ class MessageManager(object, metaclass=Singleton):
 
     def _NH_BlinkMessageHistoryFailedLocalFound(self, notification):
         messages = notification.data.messages
+        created_views = set()
         for message in messages:
             from blink.contacts import URIUtils
             contact, contact_uri = URIUtils.find_contact(message.remote_uri)
+            if contact_uri.uri in created_views:
+                # creation of message views take time, so we need to skip duplicates here
+                continue
+
             session_manager = SessionManager()
             account = AccountManager().get_account(message.account_id)
 
@@ -1455,9 +1460,10 @@ class MessageManager(object, metaclass=Singleton):
                 contact.settings.name = message.display_name
 
             try:
-                blink_session = next(session for session in self.sessions if session.contact.settings is contact.settings or (instance_id and instance_id == session.remote_instance_id))
+                blink_session = next(session for session in self.sessions if session.contact_uri.uri == contact_uri.uri or (instance_id and instance_id == session.remote_instance_id))
             except StopIteration:
-                log.info(f"Create message view for account {account.id} to {contact_uri.uri} with instance_id {instance_id}")
+                log.info(f"Create message view for {contact_uri.uri} with instance_id {instance_id}")
+                created_views.add(contact_uri.uri)
                 blink_session = session_manager.create_session(contact, contact_uri, [StreamDescription('messages')], account=account, connect=False)
             else:
                 if blink_session.fake_streams.get('messages') is None:
@@ -1548,7 +1554,7 @@ class MessageManager(object, metaclass=Singleton):
 
     def send_message(self, account, contact, content, content_type='text/plain', recipients=None, courtesy_recipients=None, subject=None, timestamp=None, required=None, additional_headers=None, id=None):
         blink_session = next(session for session in self.sessions if session.contact.settings is contact.settings)
-
+        blink_session.last_failed_reason = None
         outgoing_message = OutgoingMessage(account, contact, content, content_type, recipients, courtesy_recipients, subject, timestamp, required, additional_headers, id, blink_session)
         self._send_message(outgoing_message)
 
@@ -1563,7 +1569,7 @@ class MessageManager(object, metaclass=Singleton):
             contact.settings.name = display_name
 
         try:
-            blink_session = next(session for session in self.sessions if session.contact.settings is contact.settings or (contact.type == 'dummy' and uri in session.contact.uris))
+            blink_session = next(session for session in self.sessions if session.contact_uri.uri == contact_uri.uri or (contact.type == 'dummy' and uri in session.contact.uris))
         except StopIteration:
             blink_session = session_manager.create_session(contact, contact_uri, [StreamDescription('messages')], account=account, connect=False, remote_instance_id=instance_id)
         else:
