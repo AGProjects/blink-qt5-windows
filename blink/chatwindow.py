@@ -1039,7 +1039,7 @@ class ChatWidget(base_class, ui_class):
                             self.chat_js.insert_as_parent(f'message-{id}', html_message, html_rendered_message)
                             self.chat_js.add_context_menu(message.id)
                     else:
-                        # html_message = message.to_html(self.style, user_icons=self.user_icons_css_class).replace("<div id=\"insert\"></div>", '').replace("<span id=\"insert\"></span>", '')
+                        html_message = message.to_html(self.style, user_icons=self.user_icons_css_class).replace("<div id=\"insert\"></div>", '').replace("<span id=\"insert\"></span>", '')
                         self.chat_js.prepend_outside_element(f'message-{id}', html_message)
                         self.chat_js.add_context_menu(message.id)
                     self.timestamp_rendered_messages.insert(i, (message.timestamp, message.id, message))
